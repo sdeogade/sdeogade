@@ -1,0 +1,58 @@
+-----------------------------------------
+
+USE ROLE SYSADMIN;
+
+CREATE WAREHOUSE PRD_PLAT_GOV_WH WITH
+    WAREHOUSE_SIZE = 'SMALL'   //vertical scaling
+    WAREHOUSE_TYPE = 'STANDARD'
+    AUTO_SUSPEND = 300
+    AUTO_RESUME = TRUE
+    MIN_CLUSTER_COUNT = 1
+    MAX_CLUSTER_COUNT = 1       //horizontal scaling
+    SCALING_POLICY = 'STANDARD'
+ ;
+
+USE WAREHOUSE PRD_PLAT_GOV_WH;
+
+
+-------------EXTERNAL STAGE---------------------
+
+
+create stage if not exists "PRD_PLAT_GOV_COMMON_DB"."UTIL".account_usage_stg
+url='azure://bysnow.blob.core.windows.net/admin/account_usage/'
+credentials=(azure_sas_token='xxx')
+;
+
+
+
+-------------COMMON DB---------------------
+
+CREATE OR REPLACE DATABASE PRD_PLAT_GOV_COMMON_DB DATA_RETENTION_TIME_IN_DAYS=90
+COMMENT ='Common Database';
+
+CREATE  OR REPLACE SCHEMA PRD_PLAT_GOV_COMMON_DB.UTIL DATA_RETENTION_TIME_IN_DAYS=90
+COMMENT ='';
+
+
+---------------------DB RAW LAYER--------------------------
+CREATE  OR REPLACE DATABASE PRD_PLAT_GOV_RL_DB DATA_RETENTION_TIME_IN_DAYS=90
+COMMENT ='Raw Layer Database which will save the data extract for account Usage';
+
+CREATE  OR REPLACE SCHEMA PRD_PLAT_GOV_RL_DB.account_usage DATA_RETENTION_TIME_IN_DAYS=90
+COMMENT ='Schema for Account Usage';
+
+
+------------------DB INTEGRATION LAYER----------------------
+CREATE  OR REPLACE DATABASE PRD_PLAT_GOV_IL_DB DATA_RETENTION_TIME_IN_DAYS=90
+COMMENT ='Integration Layer where data will be stored after defining dims and facts';
+
+CREATE  OR REPLACE SCHEMA PRD_PLAT_GOV_IL_DB.USAGE_METRIC DATA_RETENTION_TIME_IN_DAYS=90
+COMMENT ='Schema for usage metric';
+
+-------------------DB PRESENTATION LAYER -------------------------
+
+CREATE  OR REPLACE DATABASE PRD_PLAT_GOV_PL_DB DATA_RETENTION_TIME_IN_DAYS=90
+COMMENT ='Reporting Layer Database';
+
+CREATE  OR REPLACE SCHEMA PRD_PLAT_GOV_PL_DB.REPORTING DATA_RETENTION_TIME_IN_DAYS=90
+COMMENT ='Schema for Reporting';
