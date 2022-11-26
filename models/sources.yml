@@ -13,3 +13,9 @@ sources:
 
       - name: reviews
         identifier: raw_reviews
+        loaded_at_field: date
+        freshness:
+          warn_after: {count: 1, period: hour}
+          error_after: {count: 24, period: hour}
+# command : dbt source freshness
+# purpose : to test whether latest data is getting loaded. more than one day old it will throw error
